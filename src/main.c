@@ -5,9 +5,11 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "ast.h"
 #include "scanner.h"
 #include "parser.h"
 #include "cmdline.h"
+#include "dump.h"
 
 int errors = 0;
 
@@ -71,6 +73,8 @@ int main(int argc, char** argv) {
         printf("parse fail: %d error(s)\n", errors);
         return 1;
     }
+
+    dumpModule(module);
 
     destroyCmdLine();
 

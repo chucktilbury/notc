@@ -1,6 +1,8 @@
 #ifndef _MEMORY_H_
 #define _MEMORY_H_
 
+#include <string.h>
+
 #define _init_memory()
 #define _uninit_memory()
 #define _alloc(s) mem_malloc(s)

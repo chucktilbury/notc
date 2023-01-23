@@ -1,20 +1,29 @@
-# NACC
-NACC Is Not A C Compiler -- pronounced as knack.
+# NOTC
+NOTC Is Not A C Compiler -- pronounced as "not-see".
 
-This is the NACC programming language. It's a simple toy language that I am building for fun. It consists of a compiler that compiles source code into assembly language, an assembler that creates a binary file from the assembly and a virtual machine that runs the binary. 
+This is the NOTC programming language. It's a simple toy language that I am building for fun. It consists of a compiler that compiles source code into assembly language, an assembler that creates a binary file from the assembly and a virtual machine that runs the binary. 
 
-NACC is a single pass compiler. Symbols must be defined before they are used. Comments start with a ";" and end at the end of the line. Keywords are not case sensitive.
+NOTC is a single pass compiler. Symbols must be defined before they are used. Comments start with a ";" and end at the end of the line. Keywords are not case sensitive.
 
 ## Not supported features
-NACC is a tiny subset of a "real" programming language.
+NOTC is a tiny subset of a "real" programming language.
 - Pointers
 - Data strucutres
 
 ## Data types and variables 
 There is no notion of a data structure. Global variables as well as function locals are supported. Variables may be initialized when they are defined or not. There is no notion of a pointer or memory allocation. Function pointers are not supported. Type casting is supported in situations where it's a good idea.
-- number - All numbers are double precision floats. There is no provision for bitwise operations.
+- FLOAT - Double precision floats. 
+
+- INT - Int64_t type.
+
+- UINT - Uint64_t type.
+
+  There is no provision for bitwise operations.
+
 - string - Strings are formatted using {} characters embedded in the string. Strings enclosed in double quotes are formartted and strings enclosed in single quotes are literal. There is no notion of a character. 
+
 - boolean - Boolean values can have 2 states. True and False.
+
 - nothing - This type is only used for functions that do not return an actual value. Variables cannot be of type nothing.
 
 ## Functions
@@ -91,16 +100,20 @@ nothing function() {
 ```
 ## Keywords
 - string - names a variable of type string
-- number - names a variable of type number
-- boolean - names a variable of type boolean
-- nothing - names a function with no return type
+- int,integer - names a variable of type signed integer
+- uint,unsigned - name a variable of unsigned integer
+- float - name a variable of double precision float
+- bool,boolean - names a variable of type boolean
+- noth,nothing - names a function with no return type
 - if - introduces an if(){} clause
-- else - introduces an else(){} cleause
-- while - introdues a while(){} clause
-- do - introduces a do{}while() clause
-- and - logical and operation in boolean expression
-- or - logical or operation in boolean expression
-- not - logical not in boolean expression
+- else - introduces an else(){} clause
+- switch - Introduce a switch/case clause.
+- case - Mark an instance of a switch/case clause.
+- while - Introduce a while(){} clause
+- do - Introduces a do{}while() clause
+- &&,and - Logical and operation in boolean expression
+- ||,or - Logical or operation in boolean expression
+- !,not - Logical not in boolean expression
 - continue - cause the loop to jump to the top
 - break - break out of a loop
 - start - mark the entry point into a program

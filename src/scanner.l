@@ -1,4 +1,5 @@
 %{
+#include "ast.h"
 #include "parser.h"
 #include "memory.h"
 #include <stdio.h>
@@ -68,21 +69,17 @@ int yycolumn = 1;
 [ \t\r] {}
 
 "break"     { return BREAK; }
-"case"      { return CASE; }
 "continue"  { return CONTINUE; }
 "const"     { return CONST; }
 "default"   { return DEFAULT; }
 "import"    { return IMPORT; }
 "do"        { return DO; }
 "else"      { return ELSE; }
-"for"       { return FOR; }
 "if"        { return IF; }
 "return"    { return RETURN; }
-"switch"    { return SWITCH; }
 "while"     { return WHILE; }
 "true"      { return TRUE; }
 "false"     { return FALSE; }
-"in"        { return IN; }
 "yield"     { return YIELD; }
 "exit"      { return EXIT; }
 "struct"    { return STRUCT; }
@@ -90,38 +87,40 @@ int yycolumn = 1;
 "print"     { return PRINT; }
 "type"      { return TYPE; }
 
-"integer"   { notc_lval.type = INT; return TYPE_NAME; }
-"int"       { notc_lval.type = INT; return TYPE_NAME; }
-"unsigned"  { notc_lval.type = UINT; return TYPE_NAME; }
-"uint"      { notc_lval.type = UINT; return TYPE_NAME; }
-"float"     { notc_lval.type = FLOAT; return TYPE_NAME; }
-"nothing"   { notc_lval.type = NOTHING; return TYPE_NAME; }
-"noth"      { notc_lval.type = NOTHING; return TYPE_NAME; }
-"string"    { notc_lval.type = STRING; return TYPE_NAME; }
-"strg"      { notc_lval.type = STRING; return TYPE_NAME; }
-"bool"      { notc_lval.type = BOOLEAN; return TYPE_NAME; }
-"boolean"   { notc_lval.type = BOOLEAN; return TYPE_NAME; }
-"list"      { notc_lval.type = LIST; return TYPE_NAME; }
-"dict"      { notc_lval.type = DICT; return TYPE_NAME; }
-"dictionary" { notc_lval.type = DICT; return TYPE_NAME; }
-"hash"      { notc_lval.type = DICT; return TYPE_NAME; }
+"integer"|"int"     { notc_lval.type = INT; return INT; }
+"unsigned"|"uint"   { notc_lval.type = UINT; return UINT; }
+"nothing"|"noth"    { notc_lval.type = NOTHING; return NOTHING; }
+"string"|"strg"     { notc_lval.type = STRING; return STRING; }
+"bool"|"boolean"    { notc_lval.type = BOOLEAN; return BOOLEAN; }
+"float"             { notc_lval.type = FLOAT; return FLOAT; }
 
-"<="    { return LORE; }
-">="    { return GORE; }
-"=="    { return EQU; }
-"!="    { return NEQU; }
-"||"    { return OR; }
-"or"    { return OR; }
-"&&"    { return AND; }
-"and"   { return AND; }
-"+="    { return ADD_ASSIGN; }
-"-="    { return SUB_ASSIGN; }
-"*="    { return MUL_ASSIGN; }
-"/="    { return DIV_ASSIGN; }
-"%="    { return MOD_ASSIGN; }
-"++"    { return INCREMENT; }
-"--"    { return DECREMENT; }
-"not"   { return NOT; }
+"<="        { return LORE; }
+">="        { return GORE; }
+"=="        { return EQU; }
+"!="        { return NEQU; }
+"||"|"or"   { return OR; }
+"&&"|"and"  { return AND; }
+"+="        { return ADD_ASSIGN; }
+"-="        { return SUB_ASSIGN; }
+"*="        { return MUL_ASSIGN; }
+"/="        { return DIV_ASSIGN; }
+"%="        { return MOD_ASSIGN; }
+"not"|"!"   { return NOT; }
+
+"+"         { return '+'; }
+"-"         { return '-'; }
+"*"         { return '*'; }
+"/"         { return '/'; }
+"%"         { return '%'; }
+"="         { return '='; }
+"("         { return '('; }
+")"         { return ')'; }
+"<"         { return '<'; }
+">"         { return '>'; }
+"["         { return '['; }
+"]"         { return ']'; }
+"{"         { return '{'; }
+"}"         { return '}'; }
 
 [a-zA-Z_][a-zA-Z_0-9]* {
         notc_lval.symbol = (char*)strdup(yytext);
@@ -211,6 +210,7 @@ int yycolumn = 1;
         _free(tmp->fname);
         fclose(tmp->fptr);
         _free(tmp);
+
         fstack = fstack->next;
 
         if(fstack == NULL) {
@@ -224,7 +224,7 @@ int yycolumn = 1;
 
 
 %%
-
+/*
 const char* _strdup(const char* str) {
 
     size_t len = strlen(str) + 1;
@@ -232,6 +232,7 @@ const char* _strdup(const char* str) {
     memcpy(buf, str, len);
     return buf;
 }
+*/
 
 int open_file(const char *fname) {
 

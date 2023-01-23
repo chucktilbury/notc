@@ -1,0 +1,12 @@
+;--------------------------------
+;   Generic expression test.
+;--------------------------------
+
+const int plart = ncase != 3
+int zop
+; comment
+;import "../tests/tst2.notc"
+
+float plop = 100.123
+
+;; float symb() {}
