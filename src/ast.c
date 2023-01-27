@@ -5,7 +5,8 @@
 #include "parser.h"
 
 #ifdef ENABLE_PARSER_TRACE
-#define TRACE   printf("%s() %s:%d:%d\n", __func__, get_file_name(), get_line_no(), get_col_no());
+//#define TRACE   printf("%s() %s:%d:%d\n", __func__, get_file_name(), get_line_no(), get_col_no());
+#define TRACE   printf("%s()\n", __func__);
 #else
 #define TRACE
 #endif
@@ -14,9 +15,11 @@ Module* module = NULL;
 
 void initAst(Ast* ast, AstType type) {
 
+    /*
     ast->fname = _copy_str(get_file_name());
     ast->line = get_line_no();
     ast->col = get_col_no();
+    */
     ast->type = type;
 }
 
@@ -43,7 +46,10 @@ ModuleList* createModuleList() {
 void addModuleList(ModuleList* ptr, void* item) {
 
     TRACE
-    appendPtrLst(ptr->list, item);
+    if(item != NULL) {
+        //printf("add item: %d\n", ((Ast*)item)->type);
+        appendPtrLst(ptr->list, item);
+    }
 }
 
 TypeDefinition* createTypeDefinition(int type) {
@@ -141,6 +147,34 @@ void addExpression(Expression* ptr, void* item) {
     appendPtrLst(ptr->list, item);
 }
 
+ExpressionList* createExpressionList() {
+
+    TRACE
+    ExpressionList* ptr = _alloc_ds(ExpressionList);
+    initAst(&ptr->ast, AST_EXPRESSION_LIST);
+    ptr->list = createPtrLst();
+
+    return ptr;
+}
+
+void addExpressionList(ExpressionList* ptr, void* item) {
+
+    TRACE
+    //printf("ptr = %p\n", ptr);
+    appendPtrLst(ptr->list, item);
+}
+
+FunctionReference* createFunctionReference(const char* name, ExpressionList* list) {
+
+    TRACE
+    FunctionReference* ptr = _alloc_ds(FunctionReference);
+    initAst(&ptr->ast, AST_FUNCTION_REFERENCE);
+    ptr->name = _copy_str(name);
+    ptr->list = list;
+
+    return ptr;
+}
+
 SymbolIntroList* createSymbolIntroList() {
 
     TRACE
@@ -177,3 +211,5 @@ ExpressionFactor* createExpressionFactor(ExpressionFactorType type, void* item) 
 
     return ptr;
 }
+
+

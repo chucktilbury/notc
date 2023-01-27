@@ -12,7 +12,7 @@
 char* get_file_name();
 int get_line_no();
 int get_col_no();
-int open_file(const char* fname);
+void open_file(const char* fname);
 
 /*
  * Defined by flex. Call one time to isolate a symbol and then use the global

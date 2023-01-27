@@ -76,9 +76,11 @@ typedef enum {
 
 typedef struct {
     AstType type;
+    /*
     const char* fname;
     int line;
     int col;
+    */
 } Ast;
 
 typedef struct {
@@ -117,6 +119,17 @@ typedef struct {
 
 typedef struct {
     Ast ast;
+    PtrLst* list;
+} ExpressionList;
+
+typedef struct {
+    Ast ast;
+    const char* name;
+    ExpressionList* list;
+} FunctionReference;
+
+typedef struct {
+    Ast ast;
     TypeDefinition* type;
     const char* str;
     Expression* assign;
@@ -152,8 +165,11 @@ SymbolIntroList* createSymbolIntroList();
 void addSymbolIntroList(SymbolIntroList* ptr, void* item);
 Expression* createExpression();
 void addExpression(Expression* ptr, void* item);
+ExpressionList* createExpressionList();
+void addExpressionList(ExpressionList* ptr, void* item);
 Operator* createOperator(OperatorType type);
 ExpressionFactor* createExpressionFactor(ExpressionFactorType type, void* item);
+FunctionReference* createFunctionReference(const char* name, ExpressionList* list);
 
 extern Module* module;
 

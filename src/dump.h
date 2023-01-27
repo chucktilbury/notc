@@ -18,6 +18,8 @@ void dumpSymbolIntroList(SymbolIntroList* ptr);
 void dumpExpression(Expression* ptr);
 void dumpOperator(Operator* ptr);
 void dumpExpressionFactor(ExpressionFactor* ptr);
+void dumpExpressionList(ExpressionList* ptr);
+void dumpFunctionReference(FunctionReference* ptr);
 #else
 
 #define dumpModule(p)

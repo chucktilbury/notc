@@ -40,9 +40,17 @@ static void __append_str(const char* str) {
 
 int yycolumn = 1;
 
-/* This is executed before every action. */
+/* This is executed before every action.
 #define YY_USER_ACTION                                                   \
   fstack->line = prev_yylineno; fstack->col = yycolumn;                  \
+  if (yylineno == prev_yylineno) yycolumn += yyleng;                     \
+  else {                                                                 \
+    for (yycolumn = 1; yytext[yyleng - yycolumn] != '\n'; ++yycolumn) {} \
+    prev_yylineno = yylineno;                                            \
+  }
+ */
+#define YY_USER_ACTION                                                   \
+  fstack->col = yycolumn;                  \
   if (yylineno == prev_yylineno) yycolumn += yyleng;                     \
   else {                                                                 \
     for (yycolumn = 1; yytext[yyleng - yycolumn] != '\n'; ++yycolumn) {} \
@@ -65,7 +73,7 @@ int yycolumn = 1;
    // int start_line, start_column;
    int prev_yylineno = yylineno;
 
-\n      {}
+\n      { fstack->line++; fstack->col = 1; }
 [ \t\r] {}
 
 "break"     { return BREAK; }
@@ -172,7 +180,7 @@ int yycolumn = 1;
 <DQUOTES>\\[0-7]{1,3} { __append_char((char)strtol(yytext + 1, 0, 8)); }
 <DQUOTES>\\[xX][0-9a-fA-F]{1,3} { __append_char((char)strtol(yytext + 2, 0, 16)); }
 <DQUOTES>[^\\\"\n]*  { __append_str(yytext); }
-<DQUOTES>\n     { yylineno++; } /* track line numbers, but strip new line */
+<DQUOTES>\n     { fstack->line++; fstack->col = 1; } // yylineno++; } /* track line numbers, but strip new line */
 
     /* single quoted strings are absolute literals */
 \'  {
@@ -191,7 +199,8 @@ int yycolumn = 1;
 <SQUOTES>\\.    { __append_str(yytext); }
 <SQUOTES>\n     {
         __append_str(yytext);
-        yylineno++;
+        //yylineno++;
+        fstack->line++; fstack->col = 1;
     } /* don't strip new lines */
 
 .   {
@@ -200,13 +209,16 @@ int yycolumn = 1;
     }
 
     /* comments */
-";".*\n {}
+";".*\n { fstack->line++; fstack->col = 1; }
 
 <<EOF>> {
 
         incl_depth--;
 
         FileStack* tmp = fstack;
+
+        fprintf(stderr, ">>>>>> closing file: %s\n", tmp->fname);
+
         _free(tmp->fname);
         fclose(tmp->fptr);
         _free(tmp);
@@ -224,17 +236,10 @@ int yycolumn = 1;
 
 
 %%
-/*
-const char* _strdup(const char* str) {
 
-    size_t len = strlen(str) + 1;
-    char* buf = malloc(len);
-    memcpy(buf, str, len);
-    return buf;
-}
-*/
+void open_file(const char *fname) {
 
-int open_file(const char *fname) {
+    fprintf(stderr, "<<<<<<< opening file: %s\n", fname);
 
     if(incl_depth > MAX_INCL) {
         fprintf(stderr, "FATAL ERROR: Maximum include depth exceeded\n");
@@ -248,26 +253,21 @@ int open_file(const char *fname) {
     fs->col = 1;
     fs->next = NULL;
 
-    // file_name = _copy_str(fname);
     yyin = fopen(fname, "r");
     if(yyin == NULL) {
         fprintf(stderr, "fatal error: cannot open input file: %s: %s\n", fname,
                 strerror(errno));
         exit(1);
     }
+
     fs->fptr = yyin;
-    fs->buffer = yy_create_buffer(yyin, YY_BUF_SIZE);
-    yy_switch_to_buffer(fs->buffer);
+    yy_switch_to_buffer(yy_create_buffer(yyin, YY_BUF_SIZE));
+    fs->buffer = YY_CURRENT_BUFFER;
 
-    if(fstack != NULL) {
+    if(fstack != NULL)
         fs->next = fstack;
-        fstack = fs;
-    }
-    else
-        fstack = fs;
 
-    BEGIN(INITIAL);
-    return 0;
+    fstack = fs;
 }
 
 int get_line_no() {

@@ -118,17 +118,20 @@ const char* dataTypeToStr(int t) {
 void dumpAst(Ast* ptr) {
 
     print("%s", astTypeToStr(ptr->type));
+    /*
     inc_indent();
     {
         print("%s: %d: %d", ptr->fname, ptr->line, ptr->col);
     }
     dec_indent();
+    */
 }
 
 void dumpModule(Module* ptr) {
 
     if(outfh == NULL)
         outfh = stdout;
+    print("\n");
 
     dumpAst(&ptr->ast);
     inc_indent();
@@ -155,7 +158,8 @@ void dumpModuleList(ModuleList* ptr) {
                     break;
                 default:
                     print("%s() type error", __func__);
-                    printf("(REALLY) NOT SUPPORTED %s\n", astTypeToStr(lst[i]->type));
+                    printf("(REALLY) NOT SUPPORTED %s (%d)\n",
+                           astTypeToStr(lst[i]->type), lst[i]->type);
                     break;
 
             }
@@ -235,6 +239,9 @@ void dumpExpression(Expression* ptr) {
                 case AST_OPERATOR:
                     dumpOperator((Operator*)lst[i]);
                     break;
+                case AST_FUNCTION_REFERENCE:
+                    dumpFunctionReference((FunctionReference*)lst[i]);
+                    break;
                 default:
                     print("%s() type error", __func__);
                     break;
@@ -276,6 +283,37 @@ void dumpExpressionFactor(ExpressionFactor* ptr) {
         }
     }
     dec_indent();
+}
+
+void dumpExpressionList(ExpressionList* ptr) {
+
+    dumpAst(&ptr->ast);
+    inc_indent();
+    {
+        int len = getLenPtrLst(ptr->list);
+        Ast** lst = (Ast**)getRawPtrLst(ptr->list);
+        for(int i = 0; i < len; i++) {
+            dumpExpression((Expression*)lst[i]);
+        }
+    }
+    dec_indent();
+}
+
+void dumpFunctionReference(FunctionReference* ptr) {
+
+    dumpAst(&ptr->ast);
+    inc_indent();
+    {
+        print("name: %s", ptr->name);
+        if(ptr->list != NULL) {
+            if(getLenPtrLst((PtrLst*)ptr->list) > 0)
+                dumpExpressionList(ptr->list);
+        }
+        else
+            print("empty expression list");
+    }
+    dec_indent();
+
 }
 
 #endif /* ENABLE_AST_DUMP */
