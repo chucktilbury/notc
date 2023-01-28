@@ -22,11 +22,6 @@ add_executable(${PROJECT_NAME}
     ${FLEX_SCANNER_OUTPUTS}
     main.c
     memory.c
-    ptrlst.c
-    cmdline.c
-    ast.c
-    dump.c
-    import.c
 )
 
 target_link_libraries(${PROJECT_NAME}
@@ -46,7 +41,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -Wno-unused-variable
     -Wno-parentheses-equality
     $<$<CONFIG:DEBUG>:-DENABLE_AST_DUMP>
-    #$<$<CONFIG:DEBUG>:-DENABLE_PARSER_TRACE>
+    $<$<CONFIG:DEBUG>:-DENABLE_PARSER_TRACE>
     $<$<CONFIG:DEBUG>:-g>
     $<$<CONFIG:RELEASE>:-Ofast>
     $<$<CONFIG:PROFILE>:-pg -O0>

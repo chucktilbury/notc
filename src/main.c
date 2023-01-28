@@ -5,11 +5,8 @@
 #include <string.h>
 #include <stdint.h>
 
-#include "ast.h"
 #include "scanner.h"
 #include "parser.h"
-#include "cmdline.h"
-#include "dump.h"
 
 int errors = 0;
 
@@ -54,30 +51,17 @@ void __ferror(const char* func, int line, const char* fmt, ...) {
  */
 int main(int argc, char** argv) {
 
-    initCmdLine(CL_FL_ONE,
-                "This is the assembler. It reads the assembly language input\n"
-                "and converts it to a binary for use by the virtual machine.\n");
-    addStrParam("-o", "ofile", "output file name", "output.bin", CL_REQD);
-    addNumParam("-v", "verbose", "verbosity number from 0 to 10", 0, CL_NONE);
-    addCBwoParam("-h", "show the help information", showUseCmdLine, CL_NONE);
-    parseCmdLine(argc, argv);
+    if(argc < 2) {
+        fprintf(stderr, "require file name\n");
+        return 1;
+    }
 
-    resetCLFileList();
-    const char* name = iterateCLFileList();
-    if(name != NULL && strlen(name) > 0)
-        open_file(name);
-    else
-        showUseCmdLine();
+    open_file(argv[1]);
 
     if(notc_parse()) {
         printf("parse fail: %d error(s)\n", errors);
         return 1;
     }
-
-    if(errors == 0)
-        dumpModule(module);
-
-    destroyCmdLine();
 
     return 0;
 }

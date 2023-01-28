@@ -1,5 +1,4 @@
 %{
-#include "ast.h"
 #include "parser.h"
 #include "memory.h"
 #include <stdio.h>
