@@ -392,6 +392,7 @@ else_clause_list
         }
     ;
 
+    /* expression stacks? */
 if_clause
     : IF '(' {
             //printf("start\n");
@@ -401,7 +402,6 @@ if_clause
             $<ifsta>$->expr = tmp_expr;
         } func_body {
             $<ifsta>$->fbsl = $7;
-            $$ = $3;
             //$$ = createIfStatement(tmp_expr, $6, NULL);
         }
     ;
