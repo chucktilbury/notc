@@ -8,9 +8,10 @@
 #include "dump.h"
 #include "parser.h"
 
-#define INDENT 2
+#define INDENT 4
 static FILE* outfh;
 static int indent = 0;
+const char* tokenToStr(int tok);
 
 static void inc_indent() {
     indent += INDENT;
@@ -71,6 +72,9 @@ const char* astTypeToStr(AstType t) {
         (t == AST_EXIT_STATEMENT)? "AST_EXIT_STATEMENT":
         (t == AST_TYPE_STATEMENT)? "AST_TYPE_STATEMENT":
         (t == AST_FUNC_BODY_STATEMENT)? "AST_FUNC_BODY_STATEMENT":
+        (t == AST_SINGLE_STATEMENT)? "AST_SINGLE_STATEMENT":
+        (t == AST_ASSIGNMENT)? "AST_ASSIGNMENT":
+        (t == AST_SYMBOL)? "AST_SYMBOL":
         (t == AST_OPERATOR)? "AST_OPERATOR": "UNKNOWN";
 }
 
@@ -154,7 +158,7 @@ void dumpModuleList(ModuleList* ptr) {
                     dumpSymbolIntro((SymbolIntro*)lst[i]);
                     break;
                 case AST_FUNC_DEFINITION:
-                    printf("NOT SUPPORTED\n");
+                    dumpFunctionDefinition((FunctionDefinition*)lst[i]);
                     break;
                 default:
                     print("%s() type error", __func__);
@@ -266,15 +270,15 @@ void dumpExpressionFactor(ExpressionFactor* ptr) {
     dumpAst(&ptr->ast);
     inc_indent();
     {
-        print("type: %s", exprTypeToStr(ptr->type));
+        print("type: %s", astTypeToStr(ptr->type));
         switch(ptr->type) {
-            case EXPR_FACT_CONST:
+            case AST_CONSTANT_EXPRESSION:
                 dumpConstantExpression((ConstantExpression*)ptr->item);
                 break;
-            case EXPR_FACT_SYM:
+            case AST_SYMBOL:
                 print("symbol: \"%s\"", (const char*)ptr->item);
-            case EXPR_FACT_FUNC_REF:
-                print("not supported");
+            case AST_FUNCTION_REFERENCE:
+                dumpFunctionReference((FunctionReference*)ptr->item);
                 break;
             default:
                 print("%s() type error", __func__);
@@ -304,7 +308,7 @@ void dumpFunctionReference(FunctionReference* ptr) {
     dumpAst(&ptr->ast);
     inc_indent();
     {
-        print("name: %s", ptr->name);
+        print("name: \"%s\"", ptr->name);
         if(ptr->list != NULL) {
             if(getLenPtrLst((PtrLst*)ptr->list) > 0)
                 dumpExpressionList(ptr->list);
@@ -314,6 +318,194 @@ void dumpFunctionReference(FunctionReference* ptr) {
     }
     dec_indent();
 
+}
+
+void dumpSingleStatement(SingleStatement* ptr) {
+
+    dumpAst(&ptr->ast);
+    inc_indent();
+    {
+        print("type: %s", tokenToStr(ptr->type));
+        if(ptr->expr != NULL)
+            dumpExpression(ptr->expr);
+    }
+    dec_indent();
+}
+
+void dumpTraceStatement(TraceStatement* ptr) {
+
+    dumpAst(&ptr->ast);
+    inc_indent();
+    {
+        print("message: %s", ptr->str);
+    }
+    dec_indent();
+}
+
+void dumpFunctionDefinition(FunctionDefinition* ptr) {
+
+    dumpAst(&ptr->ast);
+    inc_indent();
+    {
+        dumpTypeDefinition(ptr->type);
+        print("name: \"%s\"", ptr->symbol);
+        if(ptr->sil != NULL)
+            dumpSymbolIntroList(ptr->sil);
+        else
+            print("no parameter list defined");
+
+        if(ptr->fbsl != NULL)
+            dumpFuncBodyStatementList(ptr->fbsl);
+        else
+            print("no function body defined");
+    }
+    dec_indent();
+}
+
+void dumpFuncBodyStatementList(FuncBodyStatementList* ptr) {
+
+    dumpAst(&ptr->ast);
+    inc_indent();
+    {
+        int len = getLenPtrLst(ptr->list);
+        Ast** lst = (Ast**)getRawPtrLst(ptr->list);
+        for(int i = 0; i < len; i++) {
+            switch(lst[i]->type) {
+                case AST_FUNC_DEFINITION:
+                    dumpFunctionDefinition((FunctionDefinition*)lst[i]);
+                    break;
+                case AST_FUNCTION_REFERENCE:
+                    dumpFunctionReference((FunctionReference*)lst[i]);
+                    break;
+                case AST_SINGLE_STATEMENT:
+                    dumpSingleStatement((SingleStatement*)lst[i]);
+                    break;
+                case AST_SYMBOL_INTRO:
+                    dumpSymbolIntro((SymbolIntro*)lst[i]);
+                    break;
+                case AST_WHILE_STATEMENT:
+                    dumpWhileStatement((WhileStatement*)lst[i]);
+                    break;
+                case AST_DO_STATEMENT:
+                    dumpDoStatement((DoStatement*)lst[i]);
+                    break;
+                case AST_IF_STATEMENT:
+                    dumpIfStatement((IfStatement*)lst[i]);
+                    break;
+                case AST_ASSIGNMENT:
+                    dumpAssignment((Assignment*)lst[i]);
+                    break;
+                default:
+                    print("%s() type error (%d)", __func__, lst[i]->type);
+                    print("really not supported");
+                    break;
+            }
+        }
+        // TODO: ASSIGNMENTS ARE MISSING!
+    }
+    dec_indent();
+}
+
+void dumpWhileStatement(WhileStatement* ptr) {
+
+    dumpAst(&ptr->ast);
+    inc_indent();
+    {
+        if(ptr->expr != NULL)
+            dumpExpression(ptr->expr);
+        else
+            print("expression is blank");
+
+        if(ptr->fbsl != NULL)
+            dumpFuncBodyStatementList(ptr->fbsl);
+        else
+            print("function body is blank");
+    }
+    dec_indent();
+}
+
+void dumpDoStatement(DoStatement* ptr) {
+
+    dumpAst(&ptr->ast);
+    inc_indent();
+    {
+        if(ptr->expr != NULL)
+            dumpExpression(ptr->expr);
+        else
+            print("expression is blank");
+
+        if(ptr->fbsl != NULL)
+            dumpFuncBodyStatementList(ptr->fbsl);
+        else
+            print("function body is blank");
+    }
+    dec_indent();
+}
+
+void dumpIfStatement(IfStatement* ptr) {
+
+    dumpAst(&ptr->ast);
+    inc_indent();
+    {
+        if(ptr->expr != NULL)
+            dumpExpression(ptr->expr);
+        else
+            print("expression is blank");
+
+        if(ptr->fbsl != NULL)
+            dumpFuncBodyStatementList(ptr->fbsl);
+        else
+            print("function body is blank");
+
+        if(ptr->list != NULL)
+            dumpElseClauseList(ptr->list);
+        else
+            print("no else clauses are present");
+    }
+    dec_indent();
+}
+
+void dumpElseClause(ElseClause* ptr) {
+
+    dumpAst(&ptr->ast);
+    inc_indent();
+    {
+        if(ptr->expr != NULL)
+            dumpExpression(ptr->expr);
+        else
+            print("expression is blank");
+
+        if(ptr->fbsl != NULL)
+            dumpFuncBodyStatementList(ptr->fbsl);
+        else
+            print("function body is blank");
+    }
+    dec_indent();
+}
+
+void dumpElseClauseList(ElseClauseList* ptr) {
+
+    dumpAst(&ptr->ast);
+    inc_indent();
+    {
+        int len = getLenPtrLst(ptr->list);
+        Ast** lst = (Ast**)getRawPtrLst(ptr->list);
+        for(int i = 0; i < len; i++) {
+            dumpElseClause((ElseClause*)lst[i]);
+        }
+    }
+    dec_indent();
+}
+
+void dumpAssignment(Assignment* ptr) {
+
+    dumpAst(&ptr->ast);
+    inc_indent();
+    {
+        print("name: \"%s\"", ptr->name);
+        dumpExpression(ptr->expr);
+    }
+    dec_indent();
 }
 
 #endif /* ENABLE_AST_DUMP */

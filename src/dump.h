@@ -20,6 +20,21 @@ void dumpOperator(Operator* ptr);
 void dumpExpressionFactor(ExpressionFactor* ptr);
 void dumpExpressionList(ExpressionList* ptr);
 void dumpFunctionReference(FunctionReference* ptr);
+void dumpSingleStatement(SingleStatement* ptr);
+void dumpTraceStatement(TraceStatement* ptr);
+
+void dumpFunctionDefinition(FunctionDefinition* ptr);
+void dumpFuncBodyStatementList(FuncBodyStatementList* ptr);
+
+void dumpWhileStatement(WhileStatement* ptr);
+void dumpDoStatement(DoStatement* ptr);
+void dumpIfStatement(IfStatement* ptr);
+
+void dumpElseClause(ElseClause* ptr);
+void dumpElseClauseList(ElseClauseList* ptr);
+
+void dumpAssignment(Assignment* ptr);
+
 #else
 
 #define dumpModule(p)

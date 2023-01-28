@@ -43,6 +43,9 @@ typedef enum {
     AST_TYPE_STATEMENT,
     AST_FUNC_BODY_STATEMENT,
     AST_OPERATOR,
+    AST_SINGLE_STATEMENT,
+    AST_ASSIGNMENT,
+    AST_SYMBOL,
 } AstType;
 
 typedef enum {
@@ -102,7 +105,7 @@ typedef struct {
 
 typedef struct {
     Ast ast;
-    ExpressionFactorType type;
+    AstType type;
     void* item;
 } ExpressionFactor;
 
@@ -137,6 +140,17 @@ typedef struct {
 
 typedef struct {
     Ast ast;
+    int type;
+    Expression* expr;
+} SingleStatement;
+
+typedef struct {
+    Ast ast;
+    const char* str;
+} TraceStatement;
+
+typedef struct {
+    Ast ast;
     PtrLst* list;
 } SymbolIntroList;
 
@@ -149,6 +163,55 @@ typedef struct {
     Ast ast;
     ModuleList* items;
 } Module;
+
+typedef struct {
+    Ast ast;
+    PtrLst* list;
+} FuncBodyStatementList;
+
+typedef struct {
+    Ast ast;
+    TypeDefinition* type;
+    const char* symbol;
+    SymbolIntroList* sil;
+    FuncBodyStatementList* fbsl;
+} FunctionDefinition;
+
+typedef struct {
+    Ast ast;
+    Expression* expr;
+    FuncBodyStatementList* fbsl;
+} WhileStatement;
+
+typedef struct {
+    Ast ast;
+    Expression* expr;
+    FuncBodyStatementList* fbsl;
+} DoStatement;
+
+typedef struct {
+    Ast ast;
+    PtrLst* list;
+} ElseClauseList;
+
+typedef struct {
+    Ast ast;
+    Expression* expr;
+    FuncBodyStatementList* fbsl;
+    ElseClauseList* list;
+} IfStatement;
+
+typedef struct {
+    Ast ast;
+    Expression* expr;
+    FuncBodyStatementList* fbsl;
+} ElseClause;
+
+typedef struct {
+    Ast ast;
+    const char* name;
+    Expression* expr;
+} Assignment;
 
 void initAst(Ast* ast, AstType type);
 Module* createModule(ModuleList* ml);
@@ -168,8 +231,33 @@ void addExpression(Expression* ptr, void* item);
 ExpressionList* createExpressionList();
 void addExpressionList(ExpressionList* ptr, void* item);
 Operator* createOperator(OperatorType type);
-ExpressionFactor* createExpressionFactor(ExpressionFactorType type, void* item);
-FunctionReference* createFunctionReference(const char* name, ExpressionList* list);
+ExpressionFactor* createExpressionFactor(AstType type, void* item);
+FunctionReference* createFunctionReference(const char* name,
+                                           ExpressionList* list);
+SingleStatement* createSingleStatement(int type, Expression* item);
+TraceStatement* createTraceStatement(const char* msg);
+FunctionDefinition* createFunctionDefinition(TypeDefinition* type,
+                                             const char* symbol,
+                                             SymbolIntroList* sil,
+                                             FuncBodyStatementList* fbsl);
+FuncBodyStatementList* createFuncBodyStatementList();
+void addFuncBodyStatementList(FuncBodyStatementList* ptr, void* item);
+
+WhileStatement* createWhileStatement(Expression* expr,
+                                     FuncBodyStatementList* fbsl);
+DoStatement* createDoStatement(Expression* expr,
+                               FuncBodyStatementList* fbsl);
+
+IfStatement* createIfStatement(); /*Expression* expr,
+                               FuncBodyStatementList* fbsl,
+                               ElseClauseList* list); */
+
+ElseClause* createElseClause(Expression* expr,
+                             FuncBodyStatementList* fbsl);
+ElseClauseList* createElseClauseList();
+void addElseClauseList(ElseClauseList* ptr, void* item);
+
+Assignment* createAssignment(const char* name, Expression* expr);
 
 extern Module* module;
 

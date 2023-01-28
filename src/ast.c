@@ -5,8 +5,10 @@
 #include "parser.h"
 
 #ifdef ENABLE_PARSER_TRACE
-//#define TRACE   printf("%s() %s:%d:%d\n", __func__, get_file_name(), get_line_no(), get_col_no());
-#define TRACE   printf("%s()\n", __func__);
+#define TRACE \
+    printf("%s() %s:%d:%d\n", __func__, \
+            get_file_name(), get_line_no(), get_col_no());
+//#define TRACE   printf("%s()\n", __func__);
 #else
 #define TRACE
 #endif
@@ -164,7 +166,8 @@ void addExpressionList(ExpressionList* ptr, void* item) {
     appendPtrLst(ptr->list, item);
 }
 
-FunctionReference* createFunctionReference(const char* name, ExpressionList* list) {
+FunctionReference* createFunctionReference(const char* name,
+                                           ExpressionList* list) {
 
     TRACE
     FunctionReference* ptr = _alloc_ds(FunctionReference);
@@ -201,7 +204,7 @@ Operator* createOperator(OperatorType type) {
     return ptr;
 }
 
-ExpressionFactor* createExpressionFactor(ExpressionFactorType type, void* item) {
+ExpressionFactor* createExpressionFactor(AstType type, void* item) {
 
     TRACE
     ExpressionFactor* ptr = _alloc_ds(ExpressionFactor);
@@ -212,4 +215,130 @@ ExpressionFactor* createExpressionFactor(ExpressionFactorType type, void* item) 
     return ptr;
 }
 
+SingleStatement* createSingleStatement(int type, Expression* item) {
 
+    TRACE
+    SingleStatement* ptr = _alloc_ds(SingleStatement);
+    initAst(&ptr->ast, AST_SINGLE_STATEMENT);
+    ptr->type = type;
+    ptr->expr = item;
+
+    return ptr;
+}
+
+TraceStatement* createTraceStatement(const char* msg) {
+
+    TRACE
+    TraceStatement* ptr = _alloc_ds(TraceStatement);
+    initAst(&ptr->ast, AST_TRACE_STATEMENT);
+    ptr->str = msg;
+
+    return ptr;
+}
+
+FunctionDefinition* createFunctionDefinition(TypeDefinition* type,
+                                             const char* symbol,
+                                             SymbolIntroList* sil,
+                                             FuncBodyStatementList* fbsl) {
+    TRACE
+    FunctionDefinition* ptr = _alloc_ds(FunctionDefinition);
+    initAst(&ptr->ast, AST_FUNC_DEFINITION);
+    ptr->type = type;
+    ptr->symbol = _copy_str(symbol);
+    ptr->sil = sil;
+    ptr->fbsl = fbsl;
+
+    return ptr;
+}
+
+FuncBodyStatementList* createFuncBodyStatementList() {
+
+    TRACE
+    FuncBodyStatementList* ptr = _alloc_ds(FuncBodyStatementList);
+    initAst(&ptr->ast, AST_FUNC_BODY_STATEMENT_LIST);
+    ptr->list = createPtrLst();
+
+    return ptr;
+}
+
+void addFuncBodyStatementList(FuncBodyStatementList* ptr, void* item) {
+
+    TRACE
+    appendPtrLst(ptr->list, item);
+}
+
+WhileStatement* createWhileStatement(Expression* expr,
+                                     FuncBodyStatementList* fbsl) {
+    TRACE
+    WhileStatement* ptr = _alloc_ds(WhileStatement);
+    initAst(&ptr->ast, AST_WHILE_STATEMENT);
+    ptr->expr = expr;
+    ptr->fbsl = fbsl;
+
+    return ptr;
+}
+
+DoStatement* createDoStatement(Expression* expr,
+                               FuncBodyStatementList* fbsl) {
+    TRACE
+    DoStatement* ptr = _alloc_ds(DoStatement);
+    initAst(&ptr->ast, AST_DO_STATEMENT);
+    ptr->expr = expr;
+    ptr->fbsl = fbsl;
+
+    return ptr;
+}
+
+IfStatement* createIfStatement() { /*Expression* expr,
+                               FuncBodyStatementList* fbsl,
+                               ElseClauseList* list) { */
+    TRACE
+    IfStatement* ptr = _alloc_ds(IfStatement);
+    initAst(&ptr->ast, AST_IF_STATEMENT);
+/*    ptr->expr = expr;
+    ptr->fbsl = fbsl;
+    ptr->list = list; */
+    ptr->expr = NULL;
+    ptr->fbsl = NULL;
+    ptr->list = NULL;
+
+    return ptr;
+}
+
+ElseClause* createElseClause(Expression* expr,
+                             FuncBodyStatementList* fbsl) {
+    TRACE
+    ElseClause* ptr = _alloc_ds(ElseClause);
+    initAst(&ptr->ast, AST_ELSE_CLAUSE);
+    ptr->expr = expr;
+    ptr->fbsl = fbsl;
+
+    return ptr;
+}
+
+ElseClauseList* createElseClauseList() {
+
+    TRACE
+    ElseClauseList* ptr = _alloc_ds(ElseClauseList);
+    initAst(&ptr->ast, AST_ELSE_CLAUSE_LIST);
+    ptr->list = createPtrLst();
+
+    return ptr;
+}
+
+void addElseClauseList(ElseClauseList* ptr, void* item) {
+
+    TRACE
+    appendPtrLst(ptr->list, item);
+}
+
+Assignment* createAssignment(const char* name, Expression* expr) {
+
+    TRACE
+    Assignment* ptr = _alloc_ds(Assignment);
+    initAst(&ptr->ast, AST_ASSIGNMENT);
+    ptr->name = _copy_str(name);
+    ptr->expr = expr;
+
+    return ptr;
+}

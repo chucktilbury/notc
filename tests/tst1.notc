@@ -15,4 +15,4 @@ import "../tests/tst2.notc"
 
 float plop = 100.123 + asdf()
 
-;; float symb() {}
+float symb() {}

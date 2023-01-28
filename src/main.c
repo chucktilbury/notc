@@ -74,7 +74,8 @@ int main(int argc, char** argv) {
         return 1;
     }
 
-    dumpModule(module);
+    if(errors == 0)
+        dumpModule(module);
 
     destroyCmdLine();
 

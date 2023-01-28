@@ -217,7 +217,9 @@ int yycolumn = 1;
 
         FileStack* tmp = fstack;
 
+#ifdef ENABLE_PARSER_TRACE
         fprintf(stderr, ">>>>>> closing file: %s\n", tmp->fname);
+#endif
 
         _free(tmp->fname);
         fclose(tmp->fptr);
@@ -239,7 +241,9 @@ int yycolumn = 1;
 
 void open_file(const char *fname) {
 
+#ifdef ENABLE_PARSER_TRACE
     fprintf(stderr, "<<<<<<< opening file: %s\n", fname);
+#endif
 
     if(incl_depth > MAX_INCL) {
         fprintf(stderr, "FATAL ERROR: Maximum include depth exceeded\n");

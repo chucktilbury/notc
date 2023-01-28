@@ -46,7 +46,7 @@ target_compile_options(${PROJECT_NAME} PRIVATE
     -Wno-unused-variable
     -Wno-parentheses-equality
     $<$<CONFIG:DEBUG>:-DENABLE_AST_DUMP>
-    $<$<CONFIG:DEBUG>:-DENABLE_PARSER_TRACE>
+    #$<$<CONFIG:DEBUG>:-DENABLE_PARSER_TRACE>
     $<$<CONFIG:DEBUG>:-g>
     $<$<CONFIG:RELEASE>:-Ofast>
     $<$<CONFIG:PROFILE>:-pg -O0>
