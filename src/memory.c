@@ -1,4 +1,6 @@
 
+#ifndef ENABLE_GC
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -41,3 +43,5 @@ void mem_free(void* ptr) {
     if(ptr != NULL)
         free(ptr);
 }
+
+#endif /* ENABLE_GC */

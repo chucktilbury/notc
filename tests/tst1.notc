@@ -1,8 +1,10 @@
+123.123e-2 qwerty(0, 123)
+0x123 0
 ;--------------------------------
 ;   Generic expression test.
 ;--------------------------------
 
-const int plart = ncase != 3
+const int _plart_123 = ncase != 3
 
 ;--------------------------------
 ; This shows a bug where if there is an expression before the import
@@ -16,3 +18,4 @@ import "../tests/tst2.notc"
 float plop = 100.123 + asdf()
 
 float symb() {}
+dd

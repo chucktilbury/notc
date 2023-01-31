@@ -3,6 +3,23 @@
 
 #include <string.h>
 
+#ifdef ENABLE_GC
+
+#include <gc.h>
+
+#define _init_memory() GC_INIT()
+#define _uninit_memory()
+#define _alloc(s) GC_MALLOC(s)
+#define _alloc_ds(t) (t*)GC_MALLOC(sizeof(t))
+#define _alloc_ds_array(t, n) (t*)GC_MALLOC(sizeof(t) * (n))
+#define _realloc(p, s) GC_REALLOC((p), (s))
+#define _realloc_ds_array(p, t, n) (t*)GC_REALLOC((p), sizeof(t) * (n))
+#define _copy_str(s) GC_STRDUP((s))
+#define _copy_data(p, s) GC_STRNDUP((p), (s))
+#define _free(p) GC_FREE((void*)p)
+
+#else /* ENABLE_GC */
+
 #define _init_memory()
 #define _uninit_memory()
 #define _alloc(s) mem_malloc(s)
@@ -21,4 +38,6 @@ void* mem_realloc(void* ptr, size_t size);
 void* mem_copy(void* ptr, size_t size);
 void mem_free(void* ptr);
 
-#endif
+#endif /* ENABLE_GC */
+
+#endif /* _MEMORY_H_ */
