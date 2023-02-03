@@ -41,27 +41,9 @@ def get_func_lst(fp) :
                     break;
     return lines
 
-if __name__ == "__main__":
+def emit_ast_h(flst):
 
-    flst = {}
-    with open("tmp.y", "r") as fp :
-        flst = get_func_lst(fp)
-        #pp(flst)
-
-    with open("parser.c", "w") as fp :
-        for tmp in flst:
-            fp.write("%s\n"%(tmp['name']))
-
-    with open("parser.h", "w") as fp :
-        for tmp in flst:
-            fp.write("%s\n"%(tmp['name']))
-
-    with open("ast.c", "w") as fp :
-        fp.write("\n#include \"ast.h\"\n\n")
-        fp.write("void init_ast(Ast* ast, AstType type) {\n")
-        fp.write("    ast->type = type;\n")
-        fp.write("}\n\n")
-
+    print("emit ast.h")
     with open("ast.h", "w") as fp :
         fp.write("#ifndef _AST_H\n")
         fp.write("#define _AST_H\n\n")
@@ -78,3 +60,39 @@ if __name__ == "__main__":
         fp.write("void init_ast(Ast* ast, AstType type);\n\n")
 
         fp.write("#endif\n")
+
+def emit_ast_c(flst):
+
+    print("emit ast.c")
+    with open("ast.c", "w") as fp :
+        fp.write("\n#include \"ast.h\"\n\n")
+        fp.write("void init_ast(Ast* ast, AstType type) {\n")
+        fp.write("    ast->type = type;\n")
+        fp.write("}\n\n")
+
+def emit_parser_h(flst) :
+
+    print("emit parser.h")
+    with open("parser.h", "w") as fp :
+        for tmp in flst:
+            fp.write("%s\n"%(tmp['name']))
+
+def emit_parser_c(flst) :
+
+    print("emit parser.c")
+    with open("parser.c", "w") as fp :
+        for tmp in flst:
+            fp.write("%s\n"%(tmp['name']))
+
+if __name__ == "__main__":
+
+    flst = {}
+    with open("tmp.y", "r") as fp :
+        flst = get_func_lst(fp)
+        #pp(flst)
+
+    emit_parser_c(flst)
+    emit_parser_c(flst)
+
+    emit_ast_c(flst)
+    emit_ast_h(flst)

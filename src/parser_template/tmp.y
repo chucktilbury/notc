@@ -39,15 +39,14 @@
 
 };
 
-%token BREAK CASE CONTINUE CONST DEFAULT
-%token DO ELSE IF RETURN SWITCH IMPORT
+%token BREAK CONTINUE CONST NAMESPACE LIST DICT
+%token DO ELSE IF RETURN IMPORT
 %token TRUE FALSE YIELD EXIT STRUCT WHILE
-%token EQU NEQU LORE GORE OR AND NOT INCREMENT DECREMENT
+%token EQU NEQU LORE GORE OR AND NOT
 %token ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN
 %token UINT INT FLOAT NOTHING STRING BOOLEAN
 %token PRINT TRACE TYPE
 
-%token<type> TYPE_NAME
 %token<symbol> SYMBOL
 %token<fnum> FNUM
 %token<inum> INUM
@@ -56,18 +55,6 @@
 
 %define parse.error verbose
 %locations
-
-%right '='
-%right ADD_ASSIGN SUB_ASSIGN
-%right MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN
-%left CAST
-%left OR
-%left AND
-%left EQU NEQU
-%left LORE GORE '<' '>'
-%left '+' '-'
-%left '*' '/' '%'
-%left NEGATE
 
 %%
 
@@ -83,8 +70,27 @@ module_list
 module_item
     : symbol_decl
     | func_definition
+    | struct_definition
+    | namespace_definition
     | IMPORT STRG
-    | error
+    ;
+
+namespace_definition
+    : NAMESPACE SYMBOL '{' module_list '}'
+    ;
+
+array_reference
+    : SYMBOL '[' expression ']'
+    ;
+
+compound_element
+    : SYMBOL
+    | array_reference
+    ;
+
+compound_name
+    : compound_element
+    | compound_name '.' compound_element
     ;
 
 type_definition
@@ -93,6 +99,15 @@ type_definition
     | FLOAT
     | STRING
     | BOOLEAN
+    ;
+
+dict_init_element
+    : SYMBOL ':' expression
+    ;
+
+dict_list
+    : dict_init_element
+    | dict_list ',' dict_init_element
     ;
 
 type_spec
@@ -114,51 +129,94 @@ constant_expression
     | FALSE
     ;
 
-symbol_intro
-    : type_spec SYMBOL
-    ;
-
 symbol_decl
-    : symbol_intro
-    | symbol_intro '=' expression
+    : type_spec SYMBOL
+    | type_spec SYMBOL '=' expression
+    | LIST SYMBOL
+    | DICT SYMBOL
+    | LIST SYMBOL '=' '[' expression_list ']'
+    | DICT SYMBOL '=' '[' dict_list ']'
     ;
 
-symbol_intro_list
-    : symbol_intro
-    | symbol_intro_list ',' symbol_intro
+symbol_decl_list
+    : symbol_decl
+    | symbol_decl_list ',' symbol_decl
     ;
 
-expression_factor
-    : constant_expression
-    | SYMBOL
-    | function_reference
+struct_element
+    : symbol_decl_list
+    | struct_definition
     ;
 
+struct_list
+    : struct_element
+    | struct_list struct_element
+    ;
+
+struct_definition
+    :   STRUCT SYMBOL '{' '}'
+    |   STRUCT SYMBOL '{' struct_list '}'
+    ;
+
+    /*
+     * Expressions are arranged from lowest precidence to the highest. Each
+     * precidence level has its own rule that references the next higher
+     * level.
+     */
 expression
-    : expression_factor
-    | expression '+' expression
-    | expression '-' expression
-    | expression '*' expression
-    | expression '/' expression
-    | expression '%' expression
-    | expression EQU expression
-    | expression NEQU expression
-    | expression LORE expression
-    | expression GORE expression
-    | expression OR expression
-    | expression AND expression
-    | expression '<' expression
-    | expression '>' expression
-    | expression ADD_ASSIGN expression
-    | expression SUB_ASSIGN expression
-    | expression MUL_ASSIGN expression
-    | expression DIV_ASSIGN expression
-    | expression MOD_ASSIGN expression
-    | '-' expression %prec NEGATE
-    | NOT expression %prec NEGATE
-    | cast_spec expression %prec CAST
+    : expr_or
+    ;
+
+expr_or
+    : expr_and
+    | expr_or OR expr_and
+    ;
+
+expr_and
+    : expr_equality
+    | expr_and AND expr_equality
+    ;
+
+expr_equality
+    : expr_compare
+    | expr_equality EQU expr_compare
+    | expr_equality NEQU expr_compare
+    ;
+
+expr_compare
+    : expr_term
+    | expr_compare LORE expr_term
+    | expr_compare GORE expr_term
+    | expr_compare '<' expr_term
+    | expr_compare '>' expr_term
+    ;
+
+expr_term
+    : expr_factor
+    | expr_term '+' expr_factor
+    | expr_term '-' expr_factor
+    ;
+
+expr_factor
+    : expr_unary
+    | expr_factor '*' expr_unary
+    | expr_factor '/' expr_unary
+    | expr_factor '%' expr_unary
+    ;
+
+expr_unary
+    : expr_primary
+    | '-' expr_unary
+    | '+' expr_unary
+    | NOT expr_unary
+    | cast_spec expr_unary
+    ;
+
+expr_primary
+    : constant_expression
+    | compound_name
+    | function_reference
     | '(' expression ')'
-    | error
     ;
 
 expression_list
@@ -172,7 +230,7 @@ function_reference
     ;
 
 func_definition
-    : type_spec SYMBOL '(' symbol_intro_list ')' func_body
+    : type_spec SYMBOL '(' symbol_decl_list ')' func_body
     | type_spec SYMBOL '(' ')' func_body
     | type_spec SYMBOL func_body
     ;
@@ -210,7 +268,6 @@ if_clause
 if_statement
     : if_clause
     | if_clause else_clause_list
-    | error
     ;
 
 while_statement
@@ -266,7 +323,12 @@ type_statement
     ;
 
 assignment
-    : SYMBOL '=' expression
+    : compound_name '=' expression
+    | compound_name ADD_ASSIGN expression
+    | compound_name SUB_ASSIGN expression
+    | compound_name MUL_ASSIGN expression
+    | compound_name DIV_ASSIGN expression
+    | compound_name MOD_ASSIGN expression
     ;
 
 func_body_statement
@@ -284,6 +346,7 @@ func_body_statement
     | break_statement
     | continue_statement
     | yield_statement
+    | struct_definition
     | func_body
     ;
 
