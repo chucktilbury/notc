@@ -5,6 +5,9 @@
 import sys, os, re
 from pprint import pprint as pp
 
+def mk_camel(name):
+    return ''.join([x.capitalize() for x in name.split('_')])
+
 def get_rules(fp) :
 
     lst = []
@@ -20,7 +23,7 @@ def get_rules(fp) :
 
 def get_func_lst(fp) :
 
-    lines = {}
+    lines = []
 
     for line in fp:
         line = line.strip()
@@ -28,8 +31,12 @@ def get_func_lst(fp) :
             for line in fp:
                 s = re.search(r"^[a-z_]+$", line)
                 if s:
-                    #lines.append(s.group(0))
-                    lines[s.group(0)] = get_rules(fp)
+                    tmp = {}
+                    tmp['name'] = s.group(0)
+                    tmp['rules'] = get_rules(fp)
+                    tmp['camel'] = mk_camel(s.group(0))
+                    tmp['ast_type'] = 'AST_'+s.group(0).upper()
+                    lines.append(tmp)
                 if line == "%%":
                     break;
     return lines
@@ -37,10 +44,37 @@ def get_func_lst(fp) :
 if __name__ == "__main__":
 
     flst = {}
-    with open("parser.y", "r") as fp :
+    with open("tmp.y", "r") as fp :
         flst = get_func_lst(fp)
-        pp(flst)
+        #pp(flst)
 
-    with open("nonterms.txt", "w") as fp :
-        for name in flst:
-            fp.write("%s\n"%(name))
+    with open("parser.c", "w") as fp :
+        for tmp in flst:
+            fp.write("%s\n"%(tmp['name']))
+
+    with open("parser.h", "w") as fp :
+        for tmp in flst:
+            fp.write("%s\n"%(tmp['name']))
+
+    with open("ast.c", "w") as fp :
+        fp.write("\n#include \"ast.h\"\n\n")
+        fp.write("void init_ast(Ast* ast, AstType type) {\n")
+        fp.write("    ast->type = type;\n")
+        fp.write("}\n\n")
+
+    with open("ast.h", "w") as fp :
+        fp.write("#ifndef _AST_H\n")
+        fp.write("#define _AST_H\n\n")
+
+        fp.write("typedef enum {\n")
+        for tmp in flst:
+            fp.write("    %s,\n"%(tmp['ast_type']))
+        fp.write("} AstType;\n\n")
+
+        fp.write("typedef struct {\n")
+        fp.write("    AstType type;\n")
+        fp.write("} Ast;\n\n")
+
+        fp.write("void init_ast(Ast* ast, AstType type);\n\n")
+
+        fp.write("#endif\n")
