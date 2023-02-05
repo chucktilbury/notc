@@ -33,15 +33,14 @@
     void* ptr;
 };
 
-%token BREAK CASE CONTINUE CONST DEFAULT
-%token DO ELSE IF RETURN SWITCH IMPORT
-%token TRUE FALSE YIELD EXIT STRUCT WHILE
-%token EQU NEQU LORE GORE OR AND NOT INCREMENT DECREMENT
+%token BREAK CONTINUE CONST
+%token DO ELSE IF RETURN IMPORT
+%token TRUE FALSE YIELD EXIT WHILE
+%token EQU NEQU LORE GORE OR AND NOT
 %token ADD_ASSIGN SUB_ASSIGN MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN
 %token UINT INT FLOAT NOTHING STRING BOOLEAN
 %token PRINT TRACE TYPE
 
-%token<type> TYPE_NAME
 %token<symbol> SYMBOL
 %token<fnum> FNUM
 %token<inum> INUM
@@ -51,9 +50,6 @@
 %define parse.error verbose
 %locations
 
-%right '='
-%right ADD_ASSIGN SUB_ASSIGN
-%right MUL_ASSIGN DIV_ASSIGN MOD_ASSIGN
 %left CAST
 %left OR
 %left AND
@@ -143,11 +139,6 @@ expression
     | expression AND expression { PTRACE("expression:expression AND expression"); }
     | expression '<' expression { PTRACE("expression:expression < expression"); }
     | expression '>' expression { PTRACE("expression:expression > expression"); }
-    | expression ADD_ASSIGN expression { PTRACE("expression:expression ADD_ASSIGN expression"); }
-    | expression SUB_ASSIGN expression { PTRACE("expression:expression SUB_ASSIGN expression"); }
-    | expression MUL_ASSIGN expression { PTRACE("expression:expression MUL_ASSIGN expression"); }
-    | expression DIV_ASSIGN expression { PTRACE("expression:expression DIV_ASSIGN expression"); }
-    | expression MOD_ASSIGN expression { PTRACE("expression:expression MOD_ASSIGN expression"); }
     | '-' expression %prec NEGATE { PTRACE("expression:- expression %%prec NEGATE"); }
     | NOT expression %prec NEGATE { PTRACE("expression:NOT expression %%prec NEGATE"); }
     | cast_spec expression %prec CAST { PTRACE("expression:cast_spec expression %%prec CAST"); }
@@ -264,6 +255,11 @@ type_statement
 
 assignment
     : SYMBOL '=' expression { PTRACE("assignment:SYMBOL=expression"); }
+    | SYMBOL ADD_ASSIGN expression { PTRACE("assignment:SYMBOL ADD_ASSIGN expression"); }
+    | SYMBOL SUB_ASSIGN expression { PTRACE("assignment:SYMBOL SUB_ASSIGN expression"); }
+    | SYMBOL MUL_ASSIGN expression { PTRACE("assignment:SYMBOL MUL_ASSIGN expression"); }
+    | SYMBOL DIV_ASSIGN expression { PTRACE("assignment:SYMBOL DIV_ASSIGN expression"); }
+    | SYMBOL MOD_ASSIGN expression { PTRACE("assignment:SYMBOL MOD_ASSIGN expression"); }
     ;
 
 func_body_statement

@@ -78,7 +78,6 @@ int yycolumn = 1;
 "break"     { return BREAK; }
 "continue"  { return CONTINUE; }
 "const"     { return CONST; }
-"default"   { return DEFAULT; }
 "import"    { return IMPORT; }
 "do"        { return DO; }
 "else"      { return ELSE; }
@@ -89,7 +88,6 @@ int yycolumn = 1;
 "false"     { return FALSE; }
 "yield"     { return YIELD; }
 "exit"      { return EXIT; }
-"struct"    { return STRUCT; }
 "trace"     { return TRACE; }
 "print"     { return PRINT; }
 "type"      { return TYPE; }
