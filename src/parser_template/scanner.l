@@ -1,11 +1,7 @@
 %{
-#include "ast.h"
-#include "parser.h"
-#include "memory.h"
-#include <stdio.h>
+#include "tmp.h"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wimplicit-function-declaration"
+#include <stdio.h>
 
 void yyerror(const char* s);
 
@@ -62,7 +58,6 @@ int yycolumn = 1;
 /* state definitions */
 %x SQUOTES
 %x DQUOTES
-%x COMMENT
 %option noinput nounput
 %option yylineno
 %option noyywrap
@@ -79,7 +74,6 @@ int yycolumn = 1;
 "break"     { return BREAK; }
 "continue"  { return CONTINUE; }
 "const"     { return CONST; }
-"default"   { return DEFAULT; }
 "import"    { return IMPORT; }
 "do"        { return DO; }
 "else"      { return ELSE; }
@@ -90,17 +84,24 @@ int yycolumn = 1;
 "false"     { return FALSE; }
 "yield"     { return YIELD; }
 "exit"      { return EXIT; }
-"struct"    { return STRUCT; }
 "trace"     { return TRACE; }
 "print"     { return PRINT; }
 "type"      { return TYPE; }
+"namespace" { return NAMESPACE; }
+"list"      { return LIST; }
+"dict"      { return DICT; }
+"struct"    { return STRUCT; }
+"class"     { return CLASS; }
+"try"       { return TRY; }
+"except"    { return EXCEPT; }
+"raise"     { return RAISE; }
 
-"integer"|"int"     { notc_lval.type = INT; return INT; }
-"unsigned"|"uint"   { notc_lval.type = UINT; return UINT; }
-"nothing"|"noth"    { notc_lval.type = NOTHING; return NOTHING; }
-"string"|"strg"     { notc_lval.type = STRING; return STRING; }
-"bool"|"boolean"    { notc_lval.type = BOOLEAN; return BOOLEAN; }
-"float"             { notc_lval.type = FLOAT; return FLOAT; }
+"unsigned"|"uint"   { yylval.type = UNSIGNED; return UNSIGNED; }
+"nothing"|"noth"    { yylval.type = NOTHING; return NOTHING; }
+"string"|"strg"     { yylval.type = STRING; return STRING; }
+"bool"|"boolean"    { yylval.type = BOOLEAN; return BOOLEAN; }
+"float"             { yylval.type = FLOAT; return FLOAT; }
+"integer"|"int"     { yylval.type = INTEGER; return INTEGER; }
 
 "<="        { return LORE; }
 ">="        { return GORE; }
@@ -129,25 +130,27 @@ int yycolumn = 1;
 "]"         { return ']'; }
 "{"         { return '{'; }
 "}"         { return '}'; }
+"."         { return '.'; }
+","         { return ','; }
 
 [a-zA-Z_][a-zA-Z_0-9]* {
-        notc_lval.symbol = (char*)strdup(yytext);
+        yylval.symbol = (char*)strdup(yytext);
         return SYMBOL;
     }
 
 [0-9]+ {
-        notc_lval.inum = (double)strtol(yytext, NULL, 10);
+        yylval.inum = (double)strtol(yytext, NULL, 10);
         return INUM;
     }
 
     /* recognize a float */
 ([0-9]*\.)?[0-9]+([Ee][-+]?[0-9]+)? {
-        notc_lval.fnum = strtod(yytext, NULL);
+        yylval.fnum = strtod(yytext, NULL);
         return FNUM;
     }
 
 0[Xx][0-9a-fA-F]+ {
-        notc_lval.unum = (double)strtol(yytext, NULL, 16);
+        yylval.unum = (double)strtol(yytext, NULL, 16);
         return UNUM;
     }
 
@@ -159,7 +162,7 @@ int yycolumn = 1;
     }
 
 <DQUOTES>\" {
-        notc_lval.str = (char*)strdup(buffer);
+        yylval.str = (char*)strdup(buffer);
         BEGIN(INITIAL);
         return STRG;
     }
@@ -190,7 +193,7 @@ int yycolumn = 1;
     }
 
 <SQUOTES>\' {
-        notc_lval.str = (char*)strdup(buffer);
+        yylval.str = (char*)strdup(buffer);
         BEGIN(INITIAL);
         return STRG;
     }
@@ -204,8 +207,8 @@ int yycolumn = 1;
     } /* don't strip new lines */
 
 .   {
-        //printf("Warning: unrecognized character: %c (0x%02X)\n", yytext[0], yytext[0]);
-        return yytext[0];
+        printf("Warning: unrecognized character: %c (0x%02X)\n", yytext[0], yytext[0]);
+        //return yytext[0];
     }
 
     /* comments */
@@ -221,9 +224,9 @@ int yycolumn = 1;
         fprintf(stderr, ">>>>>> closing file: %s\n", tmp->fname);
 #endif
 
-        _free(tmp->fname);
+        free((void*)tmp->fname);
         fclose(tmp->fptr);
-        _free(tmp);
+        free(tmp);
 
         fstack = fstack->next;
 
@@ -251,8 +254,8 @@ void open_file(const char *fname) {
     }
     incl_depth++;
 
-    FileStack* fs = _alloc_ds(FileStack);
-    fs->fname = _copy_str(fname);
+    FileStack* fs = malloc(sizeof(FileStack));
+    fs->fname = strdup(fname);
     fs->line = 1;
     fs->col = 1;
     fs->next = NULL;

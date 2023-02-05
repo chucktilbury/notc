@@ -90,6 +90,11 @@ namespace_definition
     : NAMESPACE SYMBOL '{' module_list '}' {TRACE("namespace_definition:NAMESPACE");}
     ;
 
+compound_symbol
+    : SYMBOL
+    | compound_symbol '.' SYMBOL {}
+    ;
+
 type_spec_list
     : type_spec
     | type_spec_list ',' type_spec
@@ -98,25 +103,6 @@ type_spec_list
 func_declaration
     : type_spec SYMBOL '(' ')' {}
     | type_spec SYMBOL '(' type_spec_list ')' {}
-
-except_clause
-    : EXCEPT '(' SYMBOL ')' func_body
-    ;
-
-except_clause_final
-    : EXCEPT '(' ')' func_body
-    | EXCEPT func_body
-    ;
-
-except_list
-    : except_clause
-    | except_list except_clause
-    ;
-
-try_clause
-    : TRY func_body except_list
-    | TRY func_body except_list except_clause_final
-    ;
 
 class_body_element
     : symbol_decl {}
@@ -141,28 +127,18 @@ class_definition
     ;
 
 array_reference
-    : SYMBOL '[' expression ']' {TRACE("array_reference:");}
+    : compound_element '[' expression ']' {TRACE("array_reference:");}
     ;
 
-function_reference
-    : SYMBOL '(' expression_list ')' {TRACE("function_reference:");}
-    | SYMBOL '(' ')' {TRACE("function_reference:");}
-    ;
-
-compound_symbol
-    : SYMBOL
-    | compound_symbol '.' SYMBOL {}
-    ;
-
-compound_refrence_element
+compound_element
     : SYMBOL {TRACE("compound_element:SYMBOL");}
     | array_reference {TRACE("compound_element:array_reference");}
     | function_reference {}
     ;
 
-compound_reference
-    : compound_refrence_element {TRACE("compound_name:compound_element");}
-    | compound_reference '.' compound_refrence_element {TRACE("compound_name:add");}
+compound_name
+    : compound_element {TRACE("compound_name:compound_element");}
+    | compound_name '.' compound_element {TRACE("compound_name:add");}
     ;
 
 type_definition
@@ -171,7 +147,6 @@ type_definition
     | FLOAT {TRACE("type_definition:FLOAT");}
     | STRING {TRACE("type_definition:STRING");}
     | BOOLEAN {TRACE("type_definition:BOOLEAN");}
-    | compound_symbol {}
     ;
 
 dict_init_element
@@ -187,6 +162,8 @@ type_spec
     : type_definition {TRACE("type_spec:type_definition");}
     | CONST type_definition {TRACE("type_spec:CONST");}
     | NOTHING {TRACE("type_spec:NOTHING");}
+    | LIST
+    | DICT
     ;
 
 cast_spec
@@ -287,13 +264,18 @@ expr_unary
 
 expr_primary
     : constant_expression {TRACE("expr_primary:const");}
-    | compound_reference {TRACE("expr_primary:compound");}
+    | compound_name {TRACE("expr_primary:compound");}
     | '(' expression ')' {TRACE("expr_primary:()");}
     ;
 
 expression_list
     : expression {TRACE("expression_list:");}
     | expression_list ',' expression {TRACE("expression_list:add");}
+    ;
+
+function_reference
+    : SYMBOL '(' expression_list ')' {TRACE("function_reference:");}
+    | SYMBOL '(' ')' {TRACE("function_reference:");}
     ;
 
 func_definition
@@ -389,19 +371,13 @@ type_statement
     : TYPE '(' expression ')' {TRACE("type_statement:");}
     ;
 
-raise_statement
-    : RAISE '(' SYMBOL ')' {}
-    | RAISE '(' ')' {}
-    | RAISE {}
-    ;
-
 assignment
-    : compound_symbol '=' expression {TRACE("assignment:=");}
-    | compound_symbol ADD_ASSIGN expression {TRACE("assignment:+=");}
-    | compound_symbol SUB_ASSIGN expression {TRACE("assignment:-=");}
-    | compound_symbol MUL_ASSIGN expression {TRACE("assignment:*=");}
-    | compound_symbol DIV_ASSIGN expression {TRACE("assignment:/=");}
-    | compound_symbol MOD_ASSIGN expression {TRACE("assignment:%%=");}
+    : compound_name '=' expression {TRACE("assignment:=");}
+    | compound_name ADD_ASSIGN expression {TRACE("assignment:+=");}
+    | compound_name SUB_ASSIGN expression {TRACE("assignment:-=");}
+    | compound_name MUL_ASSIGN expression {TRACE("assignment:*=");}
+    | compound_name DIV_ASSIGN expression {TRACE("assignment:/=");}
+    | compound_name MOD_ASSIGN expression {TRACE("assignment:%%=");}
     ;
 
 func_body_statement
@@ -421,8 +397,6 @@ func_body_statement
     | yield_statement {TRACE(":");}
     | struct_definition {TRACE(":");}
     | func_body {TRACE(":");}
-    | try_clause {}
-    | raise_statement {}
     ;
 
 %%

@@ -91,8 +91,8 @@ if __name__ == "__main__":
         flst = get_func_lst(fp)
         #pp(flst)
 
-    emit_parser_c(flst)
-    emit_parser_c(flst)
+    #emit_parser_c(flst)
+    #emit_parser_c(flst)
 
     emit_ast_c(flst)
     emit_ast_h(flst)
