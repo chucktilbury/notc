@@ -61,7 +61,6 @@ int yycolumn = 1;
 /* state definitions */
 %x SQUOTES
 %x DQUOTES
-%x COMMENT
 %option noinput nounput
 %option yylineno
 %option noyywrap
