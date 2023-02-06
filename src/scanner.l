@@ -125,6 +125,8 @@ int yycolumn = 1;
 "]"         { return ']'; }
 "{"         { return '{'; }
 "}"         { return '}'; }
+","         { return ','; }
+"."         { return '.'; }
 
 [a-zA-Z_][a-zA-Z_0-9]* {
         notc_lval.symbol = (char*)strdup(yytext);
@@ -200,8 +202,8 @@ int yycolumn = 1;
     } /* don't strip new lines */
 
 .   {
-        //printf("Warning: unrecognized character: %c (0x%02X)\n", yytext[0], yytext[0]);
-        return yytext[0];
+        printf("Warning: unrecognized character: %c (0x%02X)\n", yytext[0], yytext[0]);
+        //return yytext[0];
     }
 
     /* comments */
